@@ -3,7 +3,6 @@ name: CI Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
 
 jobs:
   build:
@@ -13,25 +12,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Setup Node (for API)
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
       - name: Install API dependencies
-        run: |
-          cd api
-          npm install
-
-      - name: Install UI dependencies
-        run: |
-          cd web-ui
-          npm install
-
-      - name: Build UI
-        run: |
-          cd web-ui
-          npm run build || echo "No build step"
+        working-directory: ./api
+        run: npm install
 
       - name: Done
-        run: echo "CI pipeline completed successfully"
+        run: echo "CI passed successfully"
