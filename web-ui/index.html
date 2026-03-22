@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kitchen App</title>
+</head>
+<body>
+<h1>Kitchen App Running 🍜</h1>
+
+<button onclick="createOrder()">Create Order</button>
+
+<script>
+async function createOrder(){
+ await fetch("http://localhost:3000/orders",{
+   method:"POST",
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({dish:"Masala Dosa"})
+ })
+ alert("Order created")
+}
+</script>
+
+</body>
+</html>

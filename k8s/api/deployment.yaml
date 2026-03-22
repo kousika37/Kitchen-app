@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+  namespace: kitchen-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kitchen-api
+  template:
+    metadata:
+      labels:
+        app: kitchen-api
+    spec:
+      containers:
+        - name: kitchen-api
+          image: kitchen-api:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: mongo-uri
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: kitchen-app
+spec:
+  selector:
+    app: kitchen-api
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
