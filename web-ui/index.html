@@ -1,23 +1,1131 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Kitchen App</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kitchen Orders</title>
+  <style>
+    :root {
+      --bg: #f4ede3;
+      --bg-soft: #fff8ef;
+      --surface: rgba(255, 252, 247, 0.86);
+      --surface-strong: #fffaf4;
+      --line: rgba(102, 65, 33, 0.12);
+      --text: #2f1d11;
+      --muted: #7c5b44;
+      --accent: #c95c1d;
+      --accent-deep: #9f4010;
+      --accent-soft: rgba(201, 92, 29, 0.12);
+      --good: #2f8f56;
+      --good-soft: rgba(47, 143, 86, 0.15);
+      --warn: #be5836;
+      --shadow: 0 28px 70px rgba(76, 42, 19, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 214, 158, 0.6), transparent 22%),
+        radial-gradient(circle at 85% 15%, rgba(214, 111, 42, 0.16), transparent 18%),
+        linear-gradient(180deg, #fcf7ef 0%, var(--bg) 56%, #eadbc7 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 118px,
+          rgba(118, 78, 44, 0.022) 118px,
+          rgba(118, 78, 44, 0.022) 119px
+        );
+      opacity: 0.6;
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      width: min(1280px, calc(100% - 32px));
+      margin: 22px auto 34px;
+      padding: 24px;
+      border-radius: 34px;
+      border: 1px solid rgba(122, 80, 47, 0.14);
+      background: rgba(255, 250, 243, 0.74);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 68px;
+      height: 68px;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      color: #fff7f0;
+      background:
+        radial-gradient(circle at 35% 30%, #ffb76a, transparent 34%),
+        linear-gradient(135deg, #eb8b2d, #c64e18);
+      box-shadow: 0 18px 36px rgba(198, 78, 24, 0.24);
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: clamp(2.7rem, 5vw, 5rem);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+    }
+
+    .brand-copy p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1.14rem;
+      line-height: 1.5;
+    }
+
+    .nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(122, 80, 47, 0.12);
+      background: rgba(255, 255, 255, 0.62);
+      color: var(--muted);
+      text-decoration: none;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+
+    .nav-link:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--accent-deep);
+      box-shadow: 0 10px 24px rgba(90, 51, 21, 0.08);
+    }
+
+    .nav-link.active {
+      border-color: transparent;
+      color: #fff8f1;
+      background: linear-gradient(135deg, #ef8a1f, #d35314);
+      box-shadow: 0 14px 28px rgba(211, 83, 20, 0.22);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(340px, 0.9fr);
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      padding: 26px;
+      border-radius: 30px;
+      border: 1px solid rgba(132, 88, 52, 0.15);
+      background: linear-gradient(180deg, rgba(255, 253, 249, 0.94), rgba(255, 247, 238, 0.88));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56);
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -42% 48%;
+      height: 180px;
+      background: radial-gradient(circle, rgba(241, 136, 35, 0.14), transparent 65%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--accent-deep);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1.02;
+    }
+
+    .hero-copy {
+      margin: 0 0 20px;
+      max-width: 760px;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      padding: 16px 18px;
+      border-radius: 20px;
+      border: 1px solid rgba(132, 88, 52, 0.12);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-deep);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      color: var(--text);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.97rem;
+      line-height: 1.45;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    input,
+    button {
+      border: 0;
+      font: inherit;
+      border-radius: 20px;
+    }
+
+    input {
+      width: 100%;
+      min-height: 60px;
+      padding: 0 22px;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(117, 70, 33, 0.12);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1.06rem;
+    }
+
+    input:focus {
+      outline: 2px solid rgba(201, 92, 29, 0.18);
+      box-shadow: inset 0 0 0 1px rgba(159, 64, 16, 0.22);
+    }
+
+    button {
+      min-height: 60px;
+      padding: 0 28px;
+      color: #fff8f0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ea7e18, #c94f11);
+      box-shadow: 0 16px 32px rgba(201, 79, 17, 0.22);
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.04);
+    }
+
+    button:disabled {
+      opacity: 0.72;
+      cursor: wait;
+      transform: none;
+    }
+
+    .helper {
+      min-height: 28px;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.98rem;
+    }
+
+    .helper-message {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(138, 92, 54, 0.12);
+    }
+
+    .helper-label {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .helper-status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--good-soft);
+      color: var(--good);
+      font-size: 0.88rem;
+      font-weight: 800;
+      text-transform: capitalize;
+      letter-spacing: 0.03em;
+    }
+
+    .helper-status.pending,
+    .helper-status.preparing {
+      background: rgba(201, 92, 29, 0.14);
+      color: var(--accent-deep);
+    }
+
+    .helper-status.ready {
+      background: rgba(199, 136, 32, 0.18);
+      color: #996400;
+    }
+
+    .helper-status.served {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .side-card {
+      padding: 20px;
+      border-radius: 24px;
+      border: 1px solid rgba(138, 92, 54, 0.14);
+      background: rgba(255, 249, 241, 0.92);
+    }
+
+    .side-label {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .special-title {
+      margin: 0;
+      font-size: 2rem;
+      line-height: 1.04;
+    }
+
+    .special-copy,
+    .side-copy {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .queue-value {
+      font-size: 3rem;
+      line-height: 1;
+      margin: 6px 0 0;
+      font-weight: 800;
+    }
+
+    .secondary-button {
+      width: 100%;
+      justify-content: center;
+      background: linear-gradient(135deg, #df7016, #b94711);
+    }
+
+    .menu-section {
+      margin-bottom: 20px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.98rem;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .dish-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      border-radius: 24px;
+      border: 1px solid rgba(136, 91, 53, 0.14);
+      background: linear-gradient(180deg, rgba(255, 252, 248, 0.96), rgba(255, 246, 236, 0.9));
+      min-height: 260px;
+    }
+
+    .dish-art {
+      height: 132px;
+      border-radius: 18px;
+      display: flex;
+      align-items: flex-end;
+      padding: 16px;
+      color: #fff8f1;
+      font-size: 2rem;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.08)),
+        linear-gradient(135deg, #f2a23a, #ca5820);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.32);
+    }
+
+    .dish-card:nth-child(2) .dish-art {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.08)),
+        linear-gradient(135deg, #d9801c, #8d4f18);
+    }
+
+    .dish-card:nth-child(3) .dish-art,
+    .dish-card:nth-child(6) .dish-art {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.08)),
+        linear-gradient(135deg, #c56024, #8b2b11);
+    }
+
+    .dish-card:nth-child(4) .dish-art,
+    .dish-card:nth-child(5) .dish-art {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.08)),
+        linear-gradient(135deg, #f09a30, #b85217);
+    }
+
+    .dish-meta {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .dish-meta h3 {
+      margin: 0 0 6px;
+      font-size: 1.42rem;
+      line-height: 1.1;
+    }
+
+    .dish-meta p {
+      margin: 0;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.94rem;
+      line-height: 1.45;
+    }
+
+    .dish-price {
+      color: var(--accent-deep);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .dish-footer {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dish-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-deep);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .dish-button {
+      min-height: 42px;
+      padding: 0 18px;
+      font-size: 0.94rem;
+      border-radius: 14px;
+    }
+
+    .orders-card {
+      padding: 26px;
+      border-radius: 30px;
+      border: 1px solid rgba(144, 94, 53, 0.18);
+      background: linear-gradient(180deg, rgba(255, 253, 249, 0.94), rgba(255, 248, 240, 0.9));
+    }
+
+    .orders-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .orders-header h2 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .orders-sub {
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.98rem;
+    }
+
+    .table-shell {
+      overflow: auto;
+      border-radius: 24px;
+      border: 1px solid rgba(141, 92, 51, 0.16);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      padding: 18px 22px;
+      background: rgba(255, 250, 243, 0.98);
+      color: var(--muted);
+      text-align: left;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid rgba(143, 93, 52, 0.16);
+    }
+
+    tbody td {
+      padding: 20px 22px;
+      border-bottom: 1px solid rgba(143, 93, 52, 0.12);
+      vertical-align: top;
+      font-size: 1rem;
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 247, 235, 0.72);
+    }
+
+    tbody tr.row-updated {
+      animation: rowPulse 1.1s ease;
+    }
+
+    .dish-cell strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 1.16rem;
+    }
+
+    .dish-cell span {
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 108px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--good-soft);
+      color: var(--good);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 0.96rem;
+      font-weight: 800;
+      text-transform: capitalize;
+    }
+
+    .status-chip.pending,
+    .status-chip.preparing {
+      background: rgba(201, 92, 29, 0.14);
+      color: var(--accent-deep);
+    }
+
+    .status-chip.ready {
+      background: rgba(199, 136, 32, 0.18);
+      color: #996400;
+    }
+
+    .status-chip.served {
+      background: var(--good-soft);
+      color: var(--good);
+    }
+
+    .status-chip.status-updated {
+      animation: chipPulse 0.95s ease;
+    }
+
+    .mono {
+      word-break: break-all;
+      color: var(--muted);
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.92rem;
+    }
+
+    .empty-state {
+      padding: 42px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      font-size: 1rem;
+    }
+
+    .error-message {
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    @keyframes rowPulse {
+      0% {
+        background: rgba(201, 92, 29, 0.18);
+      }
+      100% {
+        background: transparent;
+      }
+    }
+
+    @keyframes chipPulse {
+      0% {
+        transform: scale(0.94);
+        box-shadow: 0 0 0 0 rgba(201, 92, 29, 0.22);
+      }
+      45% {
+        transform: scale(1.04);
+        box-shadow: 0 0 0 10px rgba(201, 92, 29, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(201, 92, 29, 0);
+      }
+    }
+
+    @media (max-width: 1080px) {
+      .topbar,
+      .hero {
+        flex-direction: column;
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .menu-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app-shell {
+        width: min(100% - 18px, 1280px);
+        padding: 18px;
+      }
+
+      .brand {
+        align-items: flex-start;
+      }
+
+      .logo {
+        width: 58px;
+        height: 58px;
+        border-radius: 18px;
+      }
+
+      .brand-copy h1 {
+        font-size: clamp(2.2rem, 12vw, 3.8rem);
+      }
+
+      .brand-copy p,
+      .hero-copy {
+        font-size: 1rem;
+      }
+
+      .hero-stats,
+      .composer,
+      .menu-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel,
+      .orders-card {
+        padding: 18px;
+      }
+
+      .orders-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-<h1>Kitchen App Running 🍜</h1>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">🍲</div>
+        <div class="brand-copy">
+          <h1>Kitchen Orders</h1>
+          <p>Browse today&apos;s menu, choose a dish you love, and place your order in a clean customer-friendly kitchen app.</p>
+        </div>
+      </div>
 
-<button onclick="createOrder()">Create Order</button>
+      <nav class="nav" aria-label="Kitchen navigation">
+        <a class="nav-link active" href="/">Home</a>
+        <a class="nav-link" href="#menu">Menu</a>
+        <a class="nav-link" href="#orders">Orders</a>
+      </nav>
+    </header>
 
-<script>
-async function createOrder(){
- await fetch("http://localhost:3000/orders",{
-   method:"POST",
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({dish:"Masala Dosa"})
- })
- alert("Order created")
-}
-</script>
+    <section class="hero">
+      <article class="panel">
+        <div class="eyebrow">Kitchen App Experience</div>
+        <h2 class="hero-title">Freshly prepared dishes, faster ordering, and live kitchen updates.</h2>
+        <p class="hero-copy">
+          Pick a signature dish from the menu or type your own choice below. Every order still uses the same
+          backend flow, so we keep all current functionality while giving the app a more polished experience.
+        </p>
 
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-label">Featured Today</span>
+            <div class="stat-value">Smoked Tomato Pasta is leading the menu.</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Ordering Style</span>
+            <div class="stat-value">Tap a menu card or enter any custom dish name.</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Status Tracking</span>
+            <div class="stat-value">Orders move live from pending to served below.</div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <input id="dish" placeholder="Dish name (e.g. Paneer Tikka Bowl)" autocomplete="off">
+          <button id="createBtn" type="button">Create order</button>
+        </div>
+
+        <div class="helper" id="createMsg">Tip: choose a dish card below and we&apos;ll fill this for you automatically.</div>
+      </article>
+
+      <aside class="panel">
+        <div class="eyebrow">Today&apos;s Highlights</div>
+        <div class="side-stack">
+          <section class="side-card" id="specials">
+            <div class="side-label">Chef Feature</div>
+            <h2 class="special-title">Smoked Tomato Pasta</h2>
+            <p class="special-copy">A rich tomato base, subtle smoky finish, and comfort-food feel for the day&apos;s signature plate.</p>
+          </section>
+
+          <section class="side-card">
+            <div class="side-label">Orders Today</div>
+            <div class="queue-value" id="orderCount">0</div>
+            <p class="side-copy">Live count from the same kitchen order stream shown in the order board.</p>
+          </section>
+
+          <section class="side-card">
+            <div class="side-label">Quick Action</div>
+            <button id="refreshBtn" class="secondary-button" type="button">Refresh orders</button>
+          </section>
+        </div>
+      </aside>
+    </section>
+
+    <section class="menu-section" id="menu">
+      <div class="section-header">
+        <div>
+          <h2>Popular Menu</h2>
+          <p>Tap any dish card to prefill the order box, then place the order instantly.</p>
+        </div>
+      </div>
+
+      <div class="menu-grid">
+        <article class="dish-card" data-dish="Smoked Tomato Pasta">
+          <div class="dish-art">🍝</div>
+          <div class="dish-meta">
+            <div>
+              <h3>Smoked Tomato Pasta</h3>
+              <p>Silky tomato sauce, herbs, and a warm smoky finish.</p>
+            </div>
+            <div class="dish-price">Rs. 320</div>
+          </div>
+          <div class="dish-footer">
+            <div class="dish-tag">Featured</div>
+            <button class="dish-button" type="button">Select</button>
+          </div>
+        </article>
+
+        <article class="dish-card" data-dish="Paneer Tikka Bowl">
+          <div class="dish-art">🥘</div>
+          <div class="dish-meta">
+            <div>
+              <h3>Paneer Tikka Bowl</h3>
+              <p>Roasted paneer, spiced vegetables, and a hearty bowl finish.</p>
+            </div>
+            <div class="dish-price">Rs. 280</div>
+          </div>
+          <div class="dish-footer">
+            <div class="dish-tag">Best Seller</div>
+            <button class="dish-button" type="button">Select</button>
+          </div>
+        </article>
+
+        <article class="dish-card" data-dish="Masala Dosa">
+          <div class="dish-art">🥞</div>
+          <div class="dish-meta">
+            <div>
+              <h3>Masala Dosa</h3>
+              <p>Crisp golden dosa with a classic spiced potato filling.</p>
+            </div>
+            <div class="dish-price">Rs. 190</div>
+          </div>
+          <div class="dish-footer">
+            <div class="dish-tag">Classic</div>
+            <button class="dish-button" type="button">Select</button>
+          </div>
+        </article>
+
+        <article class="dish-card" data-dish="Mushroom Pepper Fry">
+          <div class="dish-art">🍲</div>
+          <div class="dish-meta">
+            <div>
+              <h3>Mushroom Pepper Fry</h3>
+              <p>Peppery, savory mushrooms with a bold pan-tossed finish.</p>
+            </div>
+            <div class="dish-price">Rs. 260</div>
+          </div>
+          <div class="dish-footer">
+            <div class="dish-tag">Spicy</div>
+            <button class="dish-button" type="button">Select</button>
+          </div>
+        </article>
+
+        <article class="dish-card" data-dish="Lemon Herb Rice Bowl">
+          <div class="dish-art">🍚</div>
+          <div class="dish-meta">
+            <div>
+              <h3>Lemon Herb Rice Bowl</h3>
+              <p>Bright, fresh rice bowl with herbs and kitchen-style comfort.</p>
+            </div>
+            <div class="dish-price">Rs. 220</div>
+          </div>
+          <div class="dish-footer">
+            <div class="dish-tag">Light</div>
+            <button class="dish-button" type="button">Select</button>
+          </div>
+        </article>
+
+        <article class="dish-card" data-dish="Chilli Garlic Noodles">
+          <div class="dish-art">🍜</div>
+          <div class="dish-meta">
+            <div>
+              <h3>Chilli Garlic Noodles</h3>
+              <p>Fast, fiery noodles tossed in a bold garlic-chilli glaze.</p>
+            </div>
+            <div class="dish-price">Rs. 240</div>
+          </div>
+          <div class="dish-footer">
+            <div class="dish-tag">Fast Pick</div>
+            <button class="dish-button" type="button">Select</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="orders-card" id="orders">
+      <div class="orders-header">
+        <div>
+          <h2>Live Orders</h2>
+          <div class="orders-sub">The same backend order workflow, presented in a cleaner customer-facing board.</div>
+        </div>
+      </div>
+
+      <div class="table-shell">
+        <table>
+          <thead>
+            <tr>
+              <th>Dish</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody">
+            <tr>
+              <td colspan="4" class="empty-state">Loading orders...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const configuredBase = window.KITCHEN_API_BASE || "/api";
+    const apiBase = configuredBase.replace(/\/$/, "");
+    const featuredDish = "Smoked Tomato Pasta";
+    let latestCreatedOrderId = "";
+    let previousOrderStatuses = {};
+
+    function el(id) {
+      return document.getElementById(id);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString();
+    }
+
+    function normalizeStatus(status) {
+      return String(status || "").trim().toLowerCase().replace(/\s+/g, "-");
+    }
+
+    function renderCreateMessage(dish, status) {
+      const statusClass = normalizeStatus(status);
+      el("createMsg").innerHTML =
+        '<span class="helper-message">' +
+        '<span class="helper-label">Created: ' + escapeHtml(dish) + '</span>' +
+        '<span class="helper-status ' + escapeHtml(statusClass) + '">' + escapeHtml(status) + '</span>' +
+        '</span>';
+    }
+
+    function selectDish(name) {
+      el("dish").value = name;
+      el("dish").focus();
+      el("createMsg").textContent = "Selected: " + name + ". Press create order when you are ready.";
+    }
+
+    async function apiGet(path) {
+      const response = await fetch(apiBase + path, {
+        headers: { Accept: "application/json" }
+      });
+      const data = await response.json().catch(() => null);
+      return { response, data };
+    }
+
+    async function refreshOrders() {
+      const body = el("ordersBody");
+      body.innerHTML = '<tr><td colspan="4" class="empty-state">Loading orders...</td></tr>';
+
+      try {
+        const { response, data } = await apiGet("/orders");
+        if (!response.ok) throw new Error("Failed to fetch orders");
+
+        const orders = Array.isArray(data) ? data : [];
+        el("orderCount").textContent = String(orders.length);
+
+        if (latestCreatedOrderId) {
+          const latestOrder = orders.find((order) => {
+            const orderId = order && order._id && order._id.toString ? order._id.toString() : order?._id || "";
+            return orderId === latestCreatedOrderId;
+          });
+
+          if (latestOrder) {
+            renderCreateMessage(latestOrder.dish, latestOrder.status);
+          }
+        }
+
+        if (!orders.length) {
+          previousOrderStatuses = {};
+          body.innerHTML = '<tr><td colspan="4" class="empty-state">No orders yet. Place your first dish from the menu above.</td></tr>';
+          return;
+        }
+
+        const nextStatuses = {};
+
+        body.innerHTML = orders.slice().reverse().map((order) => {
+          const orderId = order && order._id && order._id.toString ? order._id.toString() : order?._id || "";
+          const status = escapeHtml(order?.status);
+          const statusClass = normalizeStatus(order?.status);
+          const rawStatus = String(order?.status || "");
+          const wasKnown = Object.prototype.hasOwnProperty.call(previousOrderStatuses, orderId);
+          const statusChanged = wasKnown && previousOrderStatuses[orderId] !== rawStatus;
+          nextStatuses[orderId] = rawStatus;
+
+          return [
+            "<tr class=\"" + (statusChanged ? "row-updated" : "") + "\">",
+            "<td class=\"dish-cell\"><strong>" + escapeHtml(order?.dish) + "</strong><span>Kitchen order item</span></td>",
+            "<td><span class=\"status-chip " + statusClass + (statusChanged ? " status-updated" : "") + "\">" + status + "</span></td>",
+            "<td>" + escapeHtml(formatDate(order?.createdAt)) + "</td>",
+            "<td class=\"mono\">" + escapeHtml(orderId) + "</td>",
+            "</tr>"
+          ].join("");
+        }).join("");
+
+        previousOrderStatuses = nextStatuses;
+      } catch (error) {
+        el("orderCount").textContent = "-";
+        body.innerHTML = '<tr><td colspan="4" class="empty-state error-message">Failed to load orders from ' +
+          escapeHtml(apiBase + "/orders") + ".</td></tr>";
+      }
+    }
+
+    async function createOrder(dishOverride) {
+      const message = el("createMsg");
+      const dishNode = el("dish");
+      const dish = (dishOverride || dishNode.value).trim();
+
+      message.textContent = "";
+      if (!dish) {
+        message.textContent = "Enter a dish name first.";
+        return;
+      }
+
+      el("createBtn").disabled = true;
+
+      try {
+        const response = await fetch(apiBase + "/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dish: dish })
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data && data.error ? data.error : "Order creation failed");
+        }
+
+        latestCreatedOrderId = data && data._id && data._id.toString ? data._id.toString() : data?._id || "";
+        renderCreateMessage(data.dish, data.status);
+        dishNode.value = "";
+        await refreshOrders();
+      } catch (error) {
+        message.textContent = "Create failed: " + (error && error.message ? error.message : error);
+      } finally {
+        el("createBtn").disabled = false;
+      }
+    }
+
+    el("dish").value = featuredDish;
+
+    document.querySelectorAll(".dish-card").forEach(function(card) {
+      card.addEventListener("click", function(event) {
+        if (event.target.closest("button")) return;
+        selectDish(card.getAttribute("data-dish") || "");
+      });
+    });
+
+    document.querySelectorAll(".dish-button").forEach(function(button) {
+      button.addEventListener("click", function(event) {
+        const card = event.currentTarget.closest(".dish-card");
+        selectDish(card ? card.getAttribute("data-dish") || "" : "");
+      });
+    });
+
+    el("createBtn").addEventListener("click", function() {
+      createOrder();
+    });
+
+    el("refreshBtn").addEventListener("click", function() {
+      refreshOrders();
+    });
+
+    el("dish").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") createOrder();
+    });
+
+    refreshOrders();
+    setInterval(refreshOrders, 5000);
+  </script>
 </body>
 </html>
